@@ -5,22 +5,12 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // Environment variables exposed to the client
-  env: {
-    NEXT_PUBLIC_HIDE_SOURCE_MANAGEMENT: String(process.env.HIDE_SOURCE_MANAGEMENT === 'true'),
-    NEXT_PUBLIC_SOURCE_VIEW_PASSWORD: process.env.SOURCE_VIEW_PASSWORD || 'KVideo_Secure_2024!#$%^&*()_+-=[]{}|;:,.<>?',
-  },
-
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
   output: 'standalone',
-  outputFileTracingRoot: __dirname,
-  turbopack: {
-    root: __dirname,
-  },
 
   images: {
     remotePatterns: [
@@ -121,4 +111,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default next
+export default nextConfig;
