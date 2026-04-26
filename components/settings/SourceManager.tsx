@@ -12,6 +12,19 @@ interface SourceManagerProps {
   defaultIds: string[];
 }
 
+function maskUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.replace(/\/$/, '');
+    if (parsed.hostname.length > 4) {
+      return `${parsed.protocol}//${parsed.hostname.substring(0, 4)}****${parsed.hostname.substring(parsed.hostname.length - 4)}/${pathname}`;
+    }
+    return `${parsed.protocol}//${parsed.hostname.substring(0, 2)}****/${pathname}`;
+  } catch {
+    return url.substring(0, 8) + '********';
+  }
+}
+
 export function SourceManager({
   sources,
   onToggle,
@@ -21,6 +34,8 @@ export function SourceManager({
   defaultIds
 }: SourceManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [revealedUrls, setRevealedUrls] = useState<Set<string>>(new Set());
+  const [allRevealed, setAllRevealed] = useState(false);
 
   const handleToggle = (id: string) => {
     onToggle(id);
@@ -34,8 +49,39 @@ export function SourceManager({
     onReorder(id, direction);
   };
 
+  const toggleReveal = (id: string) => {
+    setRevealedUrls(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAllReveal = () => {
+    if (allRevealed) {
+      setRevealedUrls(new Set());
+    } else {
+      setRevealedUrls(new Set(sources.map(s => s.id)));
+    }
+    setAllRevealed(!allRevealed);
+  };
+
   return (
     <div className="space-y-3">
+      {/* Global Reveal Toggle */}
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={toggleAllReveal}
+          className="text-xs px-3 py-1.5 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color-secondary)] hover:text-[var(--accent-color)] transition-colors cursor-pointer"
+        >
+          {allRevealed ? '🔒 全部隐藏' : '👁 全部显示'}
+        </button>
+      </div>
+      
       {sources.map((source, index) => (
         <div
           key={source.id}
@@ -66,8 +112,27 @@ export function SourceManager({
                 <div className="font-semibold text-[var(--text-color)] truncate">
                   {source.name}
                 </div>
-                <div className="text-sm text-[var(--text-color-secondary)] truncate">
-                  {source.baseUrl}
+                <div className="text-sm text-[var(--text-color-secondary)] truncate flex items-center gap-2">
+                  <span className="font-mono">
+                    {revealedUrls.has(source.id) ? source.baseUrl : maskUrl(source.baseUrl)}
+                  </span>
+                  <button
+                    onClick={() => toggleReveal(source.id)}
+                    className="flex-shrink-0 p-1 rounded hover:bg-[var(--glass-border)] transition-colors cursor-pointer"
+                    aria-label={revealedUrls.has(source.id) ? '隐藏地址' : '显示地址'}
+                  >
+                    {revealedUrls.has(source.id) ? (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
