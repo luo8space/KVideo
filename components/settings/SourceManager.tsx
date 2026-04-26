@@ -13,7 +13,7 @@ interface SourceManagerProps {
   defaultIds: string[];
 }
 
-const SOURCE_VIEW_PASSWORD = process.env.NEXT_PUBLIC_SOURCE_VIEW_PASSWORD || 'KVideo_Secure_2024!#$%^&*()_+-=[]{}|;:,.<>?';
+const SOURCE_VIEW_PASSWORD = 'KVideo_Secure_2024!#$%^&*()_+-=[]{}|;:,.<>?';
 
 function maskUrl(url: string): string {
   return '●●●●●●●●●●●●●●●';
